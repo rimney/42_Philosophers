@@ -6,7 +6,7 @@
 /*   By: rimney <rimney@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/01 00:29:56 by rimney            #+#    #+#             */
-/*   Updated: 2022/03/01 21:00:17 by rimney           ###   ########.fr       */
+/*   Updated: 2022/03/03 04:49:11 by rimney           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,19 +31,25 @@ void	ft_assign(char **argv, t_philosophers *philo)
 
 void	*ft_routine(void *p)
 {
-	
+	static int i = 0;
 	t_philosophers *philo = (t_philosophers *)p;
-
-	printf("thread : %d << \n", philo->time_to_sleep);
+	pthread_mutex_lock(&philo->forks[i]);
+	printf("Philo %d has taken a fork\n", i + 1);
+	pthread_mutex_lock(&philo->forks[(i + 1) % philo->number_of_philosophers]);
+	printf("Philo %d is eating\n", i + 1);
+	usleep(philo->time_to_eat * 1000);
+	pthread_mutex_unlock(&philo->forks[i]);
+	pthread_mutex_unlock(&philo->forks[(i + 1) % philo->number_of_philosophers]);
+	printf("Philo %d is sleeping\n", i);
+	usleep(philo->time_to_sleep * 1000);
+	i++;
 	return (0);
-	
 }
 
 void	ft_create_threads(t_philosophers *philo)
 {
 	int i = 0;
 	int j = 0;
-	int k = 0;
 	while(j < philo->number_of_philosophers)
 	{
 		pthread_mutex_init(&philo->forks[j], 0);
@@ -54,14 +60,9 @@ void	ft_create_threads(t_philosophers *philo)
 	{
 		pthread_create(&philo->philosopher[i], NULL, ft_routine, philo);
 		usleep(50);
+		pthread_join(philo->philosopher[i], 0);
 		i++;
 	}
-	// while(k < philo->number_of_philosophers)
-	// {
-	// 	pthread_join(philo->philosopher[i], NULL);
-	// 	k++;
-	// }
-
 }
 
 int	main(int argc, char **argv)

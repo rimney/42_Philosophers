@@ -6,7 +6,7 @@
 /*   By: rimney <rimney@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/28 19:13:02 by rimney            #+#    #+#             */
-/*   Updated: 2022/03/01 01:09:42 by rimney           ###   ########.fr       */
+/*   Updated: 2022/03/03 00:43:58 by rimney           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ typedef struct philosophers
 	int	time_to_sleep;
 	int	time_to_eat;
 	int	each_time;
-	
 }t_philosophers;
 int	ft_atoi(char *str);
 
