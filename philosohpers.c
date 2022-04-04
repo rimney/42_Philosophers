@@ -6,7 +6,7 @@
 /*   By: rimney <rimney@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/02 19:42:37 by rimney            #+#    #+#             */
-/*   Updated: 2022/04/04 03:09:08 by rimney           ###   ########.fr       */
+/*   Updated: 2022/04/04 03:27:38 by rimney           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ void    ft_assign_values(t_philo *philo, t_args *args)
     }
 }
 
-void	ft_philo_activie(t_philo *philo)
+void	ft_philo_activity(t_philo *philo)
 {
 	ft_print_message("is thinkng", philo->id, philo->args);
 	pthread_mutex_lock(&philo->fork);
@@ -52,21 +52,27 @@ void	ft_philo_activie(t_philo *philo)
 	ft_print_message("has taken a fork", philo->id, philo->args);
 	philo->dead = ft_get_time() - philo->args->time_to_die;
 	ft_print_message("is eating", philo->id, philo->args);
-	unsleep(philo->args->time_to_sleep * 1000);
+	usleep(philo->args->time_to_sleep * 1000);
 	pthread_mutex_unlock(&philo->fork);
 	pthread_mutex_unlock(philo->next_fork);
-	ft_print_message()
-	
-	
-	
-	
+	ft_print_message("is sleeping", philo->id, philo->args);
+	usleep(philo->args->time_to_sleep * 1000);
 }
 
 void	*ft_routine(void *value)
 {
+	int i;
 	t_philo *philo;
+
 	philo = (t_philo *)value;
-	ft_print_message("is alive", philo->id, philo->args);
+	i = 0;
+	while(i < philo->args->each_time || !(philo->args->each_time))
+	{
+		ft_philo_activity(philo);
+		i++;
+		if(i == philo->args->each_time)
+			ft_print_message("is thinking", philo->id, philo->args);
+	}
 	return (NULL);
 }
 
@@ -116,6 +122,6 @@ int	main(int argc, char **argv)
 	ft_assign(argc, argv, &args);
 	philo = ft_create_threads(&args);
 	//free(philo);
-	system("leaks a.out");
+	//system("leaks a.out");
     return (0);
 }
