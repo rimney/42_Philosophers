@@ -6,7 +6,7 @@
 /*   By: rimney <rimney@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/02 19:42:37 by rimney            #+#    #+#             */
-/*   Updated: 2022/04/04 03:27:38 by rimney           ###   ########.fr       */
+/*   Updated: 2022/04/04 22:24:15 by rimney           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,13 +59,40 @@ void	ft_philo_activity(t_philo *philo)
 	usleep(philo->args->time_to_sleep * 1000);
 }
 
+void	*ft_health_check(void *value)
+{
+	t_philo *philo;
+	philo = (t_philo *) value;
+	while(1)
+	{
+		if(ft_get_time() >= philo->dead + 5)
+		{
+			ft_print_message("died", philo->id, philo->args);
+			pthread_mutex_lock(&philo->args->printing);
+			philo->args->status = 1;
+		}
+		else if(philo->max_eat == 1)
+		{
+			philo->args->beats += 1;
+			break;
+		}
+	}
+	return (NULL);
+	
+}
+
 void	*ft_routine(void *value)
 {
 	int i;
 	t_philo *philo;
+	pthread_t thread_h;
 
 	philo = (t_philo *)value;
+	philo->max_eat = 0;
 	i = 0;
+	philo->dead = philo->args->time + philo->args->time_to_die;
+	pthread_create(&thread_h, NULL, &ft_health_check, philo);
+	pthread_detach(thread_h);
 	while(i < philo->args->each_time || !(philo->args->each_time))
 	{
 		ft_philo_activity(philo);
@@ -73,6 +100,7 @@ void	*ft_routine(void *value)
 		if(i == philo->args->each_time)
 			ft_print_message("is thinking", philo->id, philo->args);
 	}
+	philo->max_eat = 1;
 	return (NULL);
 }
 
@@ -89,22 +117,21 @@ t_philo *ft_create_threads(t_args *args)
     	return (printf("Threads allocation error\n"), NULL);
 	while (i < args->philo_num)
 	{
-		pthread_mutex_init(&philo[i].fork, 0);
+		pthread_mutex_init(&philo[i].fork, NULL);
 		i++;
 	}
 	i = 0;
 	ft_assign_values(philo, args);
 	args->time = ft_get_time();
-	while(i < args->philo_num)
+	while (i < args->philo_num)
 	{
-		//printf("=====> %d\n", i);
 		if (pthread_create(&philo[i].thread_id, NULL, &ft_routine, &philo[i]))
-			return(printf("An error has been occured when creating the thread\n"), NULL); // i should free here !!
+			return (printf("An error has been occured when creating the thread\n"), NULL); // i should free here !!
 		usleep(60);
 		i++;
 	}
 	i = 0;
-	while(i < args->philo_num)
+	while (i < args->philo_num)
 	{
 		pthread_detach(philo[i].thread_id);
 		i++;
@@ -116,12 +143,30 @@ int	main(int argc, char **argv)
 {
 	t_args args;
 	t_philo *philo;
-    
+    int i;
+	args.status = 0;
+	args.beats = 0;
 	if (!ft_check_input(argc, argv))
 		return (printf("Wrong input\n"), 0);
 	ft_assign(argc, argv, &args);
+	pthread_mutex_init(&args.printing, NULL);
 	philo = ft_create_threads(&args);
+	if(!philo)
+		return (0);
+	while(args.status == 0)
+	{
+		if(args.beats == args.philo_num)
+			break;
+		sleep(50);
+	}
+	i = 0;
+	while(i < args.philo_num)
+	{
+		pthread_mutex_destroy(&philo[i].fork);
+		i++;
+	}
+	pthread_mutex_destroy(&args.printing);
 	//free(philo);
-	//system("leaks a.out");
+//	system("leaks a.out");
     return (0);
 }
