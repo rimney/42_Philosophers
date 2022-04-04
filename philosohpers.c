@@ -6,7 +6,7 @@
 /*   By: rimney <rimney@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/02 19:42:37 by rimney            #+#    #+#             */
-/*   Updated: 2022/04/02 23:20:40 by rimney           ###   ########.fr       */
+/*   Updated: 2022/04/04 03:09:08 by rimney           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,23 +26,96 @@ int    ft_assign(int argc, char **argv, t_args *args) // tested and it works fin
     return (0);
 }
 
-void    test(t_args *args)
+void    ft_assign_values(t_philo *philo, t_args *args)
 {
-    printf("Number of Philosophers : %d\n", args->philo_num);
-    printf("Time_to_die : %d\n", args->time_to_die);
-    printf("Time_to_eat : %d\n", args->time_to_eat);
-    printf("Time_to_sleep : %d\n", args->time_to_sleep);
-    printf("Each time : %d\n", args->each_time);
+    int i;
+
+    i = 0;
+    while (i < args->philo_num)
+    {
+        philo[i].id = i + 1;
+        philo[i].args = args;
+        if (i == args->philo_num - 1)
+            philo[i].next_fork = &philo[0].fork;
+        else
+            philo[i].next_fork = &philo[i + 1].fork;
+		i++;
+    }
 }
 
-int main(int argc, char **argv)
+void	ft_philo_activie(t_philo *philo)
 {
-    t_args args;
-    t_philo philo;
-    
-    if(!ft_check_input(argc, argv))
-        return (printf("Wrong input\n"), 0);
-    ft_assign(argc, argv, &args);
+	ft_print_message("is thinkng", philo->id, philo->args);
+	pthread_mutex_lock(&philo->fork);
+	ft_print_message("has taken a fork", philo->id, philo->args);
+	pthread_mutex_lock(philo->next_fork);
+	ft_print_message("has taken a fork", philo->id, philo->args);
+	philo->dead = ft_get_time() - philo->args->time_to_die;
+	ft_print_message("is eating", philo->id, philo->args);
+	unsleep(philo->args->time_to_sleep * 1000);
+	pthread_mutex_unlock(&philo->fork);
+	pthread_mutex_unlock(philo->next_fork);
+	ft_print_message()
+	
+	
+	
+	
+}
 
+void	*ft_routine(void *value)
+{
+	t_philo *philo;
+	philo = (t_philo *)value;
+	ft_print_message("is alive", philo->id, philo->args);
+	return (NULL);
+}
+
+
+
+t_philo *ft_create_threads(t_args *args)
+{
+	t_philo	*philo;
+	int		i;
+
+	i = 0;
+	philo = malloc(sizeof(t_philo) * args->philo_num);
+	if (!philo)
+    	return (printf("Threads allocation error\n"), NULL);
+	while (i < args->philo_num)
+	{
+		pthread_mutex_init(&philo[i].fork, 0);
+		i++;
+	}
+	i = 0;
+	ft_assign_values(philo, args);
+	args->time = ft_get_time();
+	while(i < args->philo_num)
+	{
+		//printf("=====> %d\n", i);
+		if (pthread_create(&philo[i].thread_id, NULL, &ft_routine, &philo[i]))
+			return(printf("An error has been occured when creating the thread\n"), NULL); // i should free here !!
+		usleep(60);
+		i++;
+	}
+	i = 0;
+	while(i < args->philo_num)
+	{
+		pthread_detach(philo[i].thread_id);
+		i++;
+	}
+	return (philo);
+}
+
+int	main(int argc, char **argv)
+{
+	t_args args;
+	t_philo *philo;
+    
+	if (!ft_check_input(argc, argv))
+		return (printf("Wrong input\n"), 0);
+	ft_assign(argc, argv, &args);
+	philo = ft_create_threads(&args);
+	//free(philo);
+	system("leaks a.out");
     return (0);
 }

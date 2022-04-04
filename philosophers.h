@@ -6,7 +6,7 @@
 /*   By: rimney <rimney@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/02 19:34:14 by rimney            #+#    #+#             */
-/*   Updated: 2022/04/02 20:57:12 by rimney           ###   ########.fr       */
+/*   Updated: 2022/04/04 01:20:57 by rimney           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ typedef struct s_philo
 
 int ft_atoi(char *str);
 int ft_check_input(int argc, char **argv);
-
+unsigned int ft_get_time(void);
+void    ft_print_message(char *str, int id, t_args *args);
 
 # endif

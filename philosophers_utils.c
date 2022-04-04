@@ -6,7 +6,7 @@
 /*   By: rimney <rimney@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/02 19:45:11 by rimney            #+#    #+#             */
-/*   Updated: 2022/04/02 21:23:48 by rimney           ###   ########.fr       */
+/*   Updated: 2022/04/04 01:22:49 by rimney           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,4 +63,19 @@ int ft_check_input(int argc, char **argv)
 		i++;
 	}
 	return (1);
+}
+
+unsigned int	ft_get_time(void)
+{
+	struct timeval	time;
+
+	gettimeofday(&time, NULL);
+	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
+}
+
+void    ft_print_message(char *str, int id, t_args *args)
+{
+    pthread_mutex_lock(&args->printing);
+    printf("%u Pilosopher %d %s\n", ft_get_time() - args->time, id, str);
+    pthread_mutex_unlock(&args->printing);
 }
