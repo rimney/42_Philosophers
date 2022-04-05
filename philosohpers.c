@@ -6,12 +6,25 @@
 /*   By: rimney <rimney@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/02 19:42:37 by rimney            #+#    #+#             */
-/*   Updated: 2022/04/04 22:24:15 by rimney           ###   ########.fr       */
+/*   Updated: 2022/04/05 03:41:09 by rimney           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+
+void	ft_sleep(int x)
+{
+	long i;
+	long o;
+
+	o = (long)x;
+	i = ft_get_time();
+	while (ft_get_time() - i < x)
+	{
+		usleep(500);
+	}
+}
 
 
 int    ft_assign(int argc, char **argv, t_args *args) // tested and it works fine <3.
@@ -34,6 +47,7 @@ void    ft_assign_values(t_philo *philo, t_args *args)
     while (i < args->philo_num)
     {
         philo[i].id = i + 1;
+		philo[i].dead = ft_get_time();
         philo[i].args = args;
         if (i == args->philo_num - 1)
             philo[i].next_fork = &philo[0].fork;
@@ -45,37 +59,43 @@ void    ft_assign_values(t_philo *philo, t_args *args)
 
 void	ft_philo_activity(t_philo *philo)
 {
-	ft_print_message("is thinkng", philo->id, philo->args);
 	pthread_mutex_lock(&philo->fork);
 	ft_print_message("has taken a fork", philo->id, philo->args);
 	pthread_mutex_lock(philo->next_fork);
 	ft_print_message("has taken a fork", philo->id, philo->args);
-	philo->dead = ft_get_time() - philo->args->time_to_die;
+	philo->dead = ft_get_time();
 	ft_print_message("is eating", philo->id, philo->args);
-	usleep(philo->args->time_to_sleep * 1000);
 	pthread_mutex_unlock(&philo->fork);
 	pthread_mutex_unlock(philo->next_fork);
+	ft_sleep(philo->args->time_to_sleep);
 	ft_print_message("is sleeping", philo->id, philo->args);
-	usleep(philo->args->time_to_sleep * 1000);
+	ft_sleep(philo->args->time_to_sleep);
+	ft_print_message("is thinkng", philo->id, philo->args);
 }
 
-void	*ft_health_check(void *value)
+void	*ft_health_check(t_philo *philo)
 {
-	t_philo *philo;
-	philo = (t_philo *) value;
+	int i;
 	while(1)
 	{
-		if(ft_get_time() >= philo->dead + 5)
+		i = 0;
+		while (i < philo->args->philo_num)
 		{
-			ft_print_message("died", philo->id, philo->args);
-			pthread_mutex_lock(&philo->args->printing);
-			philo->args->status = 1;
+			if(ft_get_time() - philo[i].dead >= philo->args->time_to_die)
+			{
+				pthread_mutex_lock(&philo->args->printing);
+				printf("%u Pilosopher %d died\n", ft_get_time() - philo->args->time, philo[i].id);
+				exit(1);
+				// printf("ss\n");
+			}
+			i++;
 		}
-		else if(philo->max_eat == 1)
-		{
-			philo->args->beats += 1;
-			break;
-		}
+		usleep(300);
+		// else if(philo->max_eat == 1)
+		// {
+		// 	philo->args->beats += 1;
+		// 	break;
+		// }
 	}
 	return (NULL);
 	
@@ -91,7 +111,6 @@ void	*ft_routine(void *value)
 	philo->max_eat = 0;
 	i = 0;
 	philo->dead = philo->args->time + philo->args->time_to_die;
-	pthread_create(&thread_h, NULL, &ft_health_check, philo);
 	pthread_detach(thread_h);
 	while(i < philo->args->each_time || !(philo->args->each_time))
 	{
@@ -130,12 +149,25 @@ t_philo *ft_create_threads(t_args *args)
 		usleep(60);
 		i++;
 	}
+	// while (i < args->philo_num)
+	// {
+	// 	pthread_create(&philo[i].thread_id, NULL, &ft_routine, &philo[i]);
+	// 	i += 2;
+	// }
+	// usleep(1000);
+	// i = 1;
+	// while (i < args->philo_num)
+	// {
+	// 	pthread_create(&philo[i].thread_id, NULL, &ft_routine, &philo[i]);
+	// 	i += 2;
+	// }
+	ft_health_check(philo);
 	i = 0;
-	while (i < args->philo_num)
-	{
-		pthread_detach(philo[i].thread_id);
-		i++;
-	}
+	// while (i < args->philo_num)
+	// {
+	// 	pthread_detach(philo[i].thread_id);
+	// 	i++;
+	// }
 	return (philo);
 }
 
@@ -157,7 +189,7 @@ int	main(int argc, char **argv)
 	{
 		if(args.beats == args.philo_num)
 			break;
-		sleep(50);
+		 sleep(50);
 	}
 	i = 0;
 	while(i < args.philo_num)
