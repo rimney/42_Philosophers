@@ -6,32 +6,36 @@
 /*   By: rimney <rimney@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/02 19:42:37 by rimney            #+#    #+#             */
-/*   Updated: 2022/04/06 01:20:58 by rimney           ###   ########.fr       */
+/*   Updated: 2022/04/07 21:37:12 by rimney           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-
 void	*ft_health_check(t_philo *philo)
 {
 	int	i;
+
 	while (1)
 	{
 		i = 0;
 		while (i < philo->args->philo_num)
 		{
-			if (ft_get_time() - philo[i].dead >= philo->args->time_to_die)
+			if (ft_get_time() - philo[i].dead > philo->args->time_to_die)
 			{
-				pthread_mutex_lock(&philo->args->printing);
-				if(philo->args->out == (philo->args->philo_num * philo->args->each_time))
+				printf("dead >>>> %d\n", philo->dead);
+				printf("get tine >>> %d\n", ft_get_time());
+				printf("time to die %d\n", philo->args->time_to_die);
+				printf("diff:  %d <<\n", ft_get_time() - philo->dead);
+				if (philo->args->out == (philo->args->philo_num * 
+					philo->args->each_time))
 				{
-					// true;
 					return (NULL);
 				}
+				pthread_mutex_lock(&philo->args->printing);
 				printf("%u Pilosopher %d died\n", (ft_get_time()
 					- philo->args->time), philo[i].id);
-				usleep(100000);
+				usleep(1000);
 				return (NULL);
 			}
 			i++;
@@ -49,6 +53,7 @@ void	*ft_routine(void *value)
 	philo = (t_philo *)value;
 	i = 0;
 	philo->dead = philo->args->time + philo->args->time_to_die;
+	printf("%d >>\n", philo->dead);
 	while (i < philo->args->each_time || !(philo->args->each_time))
 	{
 		ft_philo_activity(philo);

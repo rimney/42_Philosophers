@@ -6,7 +6,7 @@
 /*   By: rimney <rimney@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/05 20:09:21 by rimney            #+#    #+#             */
-/*   Updated: 2022/04/06 01:12:21 by rimney           ###   ########.fr       */
+/*   Updated: 2022/04/07 21:42:26 by rimney           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ void	ft_assign_values(t_philo *philo, t_args *args)
 			philo[i].next_fork = &philo[0].fork;
 		else
 			philo[i].next_fork = &philo[i + 1].fork;
+		philo[i].died = 0;
 		i++;
 	}
 }
@@ -64,9 +65,9 @@ void	ft_philo_activity(t_philo *philo)
 	ft_print_message("has taken a fork", philo->id, philo->args);
 	philo->dead = ft_get_time();
 	ft_print_message("is eating", philo->id, philo->args);
+	ft_sleep(philo->args->time_to_eat);
 	pthread_mutex_unlock(&philo->fork);
 	pthread_mutex_unlock(philo->next_fork);
-	ft_sleep(philo->args->time_to_sleep);
 	ft_print_message("is sleeping", philo->id, philo->args);
 	ft_sleep(philo->args->time_to_sleep);
 	ft_print_message("is thinkng", philo->id, philo->args);

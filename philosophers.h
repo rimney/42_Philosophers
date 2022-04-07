@@ -6,7 +6,7 @@
 /*   By: rimney <rimney@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/02 19:34:14 by rimney            #+#    #+#             */
-/*   Updated: 2022/04/06 00:39:21 by rimney           ###   ########.fr       */
+/*   Updated: 2022/04/07 20:41:55 by rimney           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ typedef struct s_philo
 	t_args			*args;
 	int				max_eat;
 	int				dead;
+	int				died;
 }	t_philo;
 
 int				ft_atoi(char *str);
